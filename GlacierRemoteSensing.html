@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glacier Remote Sensing – Course Module</title>
+  <style>
+    /* UK spelling used in comments throughout */
+    :root {
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --accent: #0f766e;
+      --accent-light: #ccfbf1;
+      --border: #e2e8f0;
+      --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+    }
+    .layout { display: flex; min-height: 100vh; }
+    .nav-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      max-height: 100vh;
+      overflow-y: auto;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0;
+      flex-shrink: 0;
+    }
+    .nav-sidebar ul { list-style: none; margin: 0; padding: 0 0.75rem; }
+    .nav-sidebar li { margin: 0; padding: 0; }
+    .nav-sidebar a {
+      display: block;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+      line-height: 1.3;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 4px;
+      border-left: 3px solid transparent;
+    }
+    .nav-sidebar a:hover { background: var(--accent-light); color: var(--accent); }
+    .nav-sidebar a:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .nav-sidebar a.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); }
+    .nav-sidebar .nav-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); padding: 0.5rem 0.5rem 0.25rem; margin-top: 0.5rem; }
+    .nav-sidebar .nav-title:first-child { margin-top: 0; }
+    .main-content { flex: 1; margin-left: 240px; padding: 0 1.5rem 2rem; }
+    .container { max-width: 720px; margin: 0; padding: 2rem 0 2rem 1.5rem; }
+    @media (max-width: 768px) {
+      .nav-sidebar { width: 200px; font-size: 0.75rem; }
+      .main-content { margin-left: 200px; }
+    }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 0 0.5rem 0;
+    }
+    .subtitle { color: #64748b; font-size: 0.95rem; margin: 0; }
+    h2 {
+      font-size: 1.35rem;
+      color: var(--text);
+      margin: 2.25rem 0 0.75rem 0;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem 0; color: var(--accent); }
+    p { margin: 0 0 1rem 0; }
+    .outcomes {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .outcomes ul { margin: 0.5rem 0 0 0; padding-left: 1.25rem; }
+    .outcomes li { margin-bottom: 0.35rem; }
+    .duration { font-size: 0.9rem; color: #64748b; font-style: italic; margin-bottom: 1.5rem; }
+    .figure {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .figure img { max-width: 100%; height: auto; display: block; border-radius: 4px; }
+    .figure-caption { font-size: 0.875rem; color: #64748b; margin-top: 0.5rem; }
+    .figure-caption a { color: var(--accent); }
+    /* Responsive 16:9 video container so iframe has visible height when served locally */
+    .video-wrapper {
+      margin-top: 1rem;
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+      background: #0f766e;
+      border-radius: 4px;
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 4px;
+    }
+    .video-fallback { font-size: 0.8rem; color: #64748b; margin-top: 0.75rem; }
+    .video-fallback code { background: #e2e8f0; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.85em; }
+    .video-placeholder {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a2e;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+    }
+    .video-placeholder:hover { background: #0f766e; }
+    .video-placeholder .play-btn {
+      width: 68px;
+      height: 48px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .video-placeholder .play-btn::after {
+      content: '';
+      margin-left: 4px;
+      border: 14px solid transparent;
+      border-left-color: #0f766e;
+      border-right: 0;
+    }
+    .video-placeholder.loaded { display: none; }
+    .quiz { background: #f1f5f9; padding: 1rem 1.25rem; border-radius: 8px; margin: 1rem 0; }
+    .quiz-options { list-style: none; padding: 0; margin: 0.5rem 0 0 0; }
+    .quiz-options li { margin: 0.5rem 0; padding-left: 0; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+    .quiz-options input[type="radio"] { cursor: pointer; accent-color: var(--accent); }
+    .quiz-options label { cursor: pointer; flex: 1; }
+    .quiz-feedback { margin-top: 0.75rem; padding: 0.75rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: none; }
+    .quiz-feedback.visible { display: block; }
+    .quiz-feedback.correct { background: #dcfce7; border: 1px solid #22c55e; color: #166534; }
+    .quiz-feedback.incorrect { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; }
+    .quiz-explanation {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: var(--card);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      font-weight: normal;
+      display: none;
+    }
+    .quiz-explanation.visible { display: block; }
+    .time-note { font-size: 0.85rem; color: #64748b; margin: 0.5rem 0; }
+    .activity { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
+    .activity h3 { margin-top: 0; }
+    .steps { padding-left: 1.25rem; }
+    .steps li { margin-bottom: 0.5rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .references { font-size: 0.9rem; }
+    .references ul { padding-left: 1.25rem; }
+    .references li { margin-bottom: 0.5rem; }
+    strong { font-weight: 600; }
+    .tip { background: #fef9c3; border-left: 4px solid #eab308; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+    footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: #64748b; }
+    /* Page navigation: only one page visible at a time */
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .page-nav .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .page-nav .btn:hover { background: #0d5c55; color: white; text-decoration: none; }
+    .page-nav .btn:disabled, .page-nav .btn.btn-disabled { background: var(--border); color: #94a3b8; cursor: not-allowed; pointer-events: none; }
+    .page-nav .page-indicator { font-size: 0.9rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <nav class="nav-sidebar" aria-label="Course contents">
+    <p class="nav-title">Contents</p>
+    <ul>
+      <li><a href="#" class="nav-link" data-page="1">Course Description &amp; Outcomes</a></li>
+      <li><a href="#" class="nav-link" data-page="2">Glaciers: Vital Reservoirs &amp; Climate Change</a></li>
+      <li><a href="#" class="nav-link" data-page="3">Glacier Mass Balance</a></li>
+      <li><a href="#" class="nav-link" data-page="4">Equilibrium Line Altitude</a></li>
+      <li><a href="#" class="nav-link" data-page="5">Reference/benchmark glacier</a></li>
+      <li><a href="#" class="nav-link" data-page="6">How to calculate from space &amp; Open-source tools</a></li>
+      <li><a href="#" class="nav-link" data-page="7">Hands-On Activity 1</a></li>
+      <li><a href="#" class="nav-link" data-page="8">Hands-On Activity 2</a></li>
+      <li><a href="#" class="nav-link" data-page="9">Practice Session &amp; References</a></li>
+    </ul>
+  </nav>
+  <main class="main-content">
+  <div class="container">
+    <header>
+      <h1>Glacier Remote Sensing</h1>
+      <p class="subtitle">Mass balance and open-source satellite tools</p>
+    </header>
+
+    <div class="page active" id="page-1" data-page="1">
+    <section id="course-description">
+      <h2>Course Description</h2>
+      <p>In the vast, frozen expanses of our planet, glaciers act as silent sentinels, recording the subtle shifts in Earth's climate through their ever-changing forms. This module invites you to uncover the secrets of glacier mass balance, a key metric that reveals how these icy behemoths are responding to global warming. Through the lens of remote sensing technologies, you'll discover how open-source data and tools empower us to track these changes from space, fostering a deeper appreciation for environmental sustainability.</p>
+    </section>
+
+    <section id="course-learning-outcomes">
+      <h2>Course Learning Outcomes</h2>
+      <p>After studying this course, you will be able to:</p>
+      <div class="outcomes">
+        <ul>
+          <li>explain <strong>glacier's</strong> critical role in monitoring climate change impacts,</li>
+          <li>define glacier mass balance and its core components,</li>
+          <li>identify major satellite sensors used for glacier observation, and</li>
+          <li>use open-source satellite images and tools for mapping glacier extents.</li>
+        </ul>
+      </div>
+      <p class="duration">This self-paced study should take 1 to 2 hours, including reading, viewing diagrams, and engaging in suggested activities.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-2" data-page="2">
+    <section id="glaciers-vital-reservoirs">
+      <h2>Glaciers: Vital Reservoirs in the Water Cycle and Life Downstream</h2>
+      <p>Studying glaciers is important because they hold a large share of the world's freshwater and strongly influence sea level, ecosystems, and human water supplies. They are also <strong>sensitive indicators of climate change</strong>: advances or retreats in glacier size reveal long-term shifts in temperature and precipitation.</p>
+      <p>Water stored as ice is a key part of the hydrological cycle. Although the cycle is often described as water in motion, most water at any given time is actually kept in long-term storage, known as "pools," such as lakes, groundwater, and ice. This storage can last from days to thousands of years and still remains part of the overall cycle. In cold, high-elevation or high-latitude regions, accumulated snow compresses into ice that slowly flows downhill to form <strong>glaciers</strong>. When these masses spread over more than 50,000 square <strong>kilometres</strong>, they are called <strong>ice sheets</strong>, and together they represent <strong>major water-storage pools</strong>.</p>
+      <p>Within the hydrological cycle, glaciers act as <strong>natural reservoirs</strong>: they collect snow during cold periods and release meltwater in warmer seasons, supplying rivers, lakes, and groundwater. This steady release helps regulate streamflow—especially during dry months—supporting agriculture, hydropower, and ecosystems far downstream.</p>
+      <p>As glacier meltwater flows downstream, many communities rely heavily on this supply during the summer months, when rainfall is often limited. It provides essential drinking water, sustains irrigation for crops, and supports industrial activities, forming the backbone of local economies in many mountain regions. Seasonal glacier runoff also helps stabilise river levels, reducing water shortages during dry periods and sustaining wetlands and aquatic habitats that depend on steady flows. In this way, distant ice fields quietly shape daily life and livelihoods far beyond the mountains where they originate.</p>
+    </section>
+
+    <section id="climate-change-threatens">
+      <h2>Climate Change Threatens Glaciers and the Communities That Depend on Them</h2>
+      <p><strong>Global warming and shifting climate patterns</strong> in the recent decades are putting these ice giants under unprecedented stress. Rising temperatures accelerate glacier melting, while changes in snowfall affect how much ice accumulates each year. The result is shrinking glaciers, reduced snowpacks, and thinning ice sheets.</p>
+      <p>For communities that rely on seasonal glacier melt, the consequences are serious. In the <strong>short term</strong>, accelerated melting may <strong>increase river flows</strong>, raising the risk of <strong>floods and landslides</strong>. But over time, as <strong>glaciers continue to retreat</strong>, the volume of meltwater declines, leading to <strong>water shortages</strong> during dry summer months. This threatens drinking water supplies, agricultural irrigation, hydropower generation, and the health of freshwater ecosystems.</p>
+      <p>The impacts extend far beyond the mountains where glaciers exist. Rivers fed by glaciers support millions of people in plains and valleys downstream. When glaciers lose mass, they disrupt this delicate balance, putting both human livelihoods and natural habitats at risk. In this way, the melting of glaciers is not just an <strong>environmental concern</strong>—it is a <strong>social and economic challenge</strong> that demands urgent attention.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-3" data-page="3">
+    <section id="glacier-mass-balance">
+      <h2>Glacier Mass Balance</h2>
+      <p>Picture a glacier as a dynamic budget keeper, constantly tallying gains and losses in its icy reserves. <strong>Glacier mass balance</strong> represents the net difference between <strong>accumulation</strong>—the addition of snow, ice, or other frozen precipitation—and <strong>ablation</strong>, which includes melting, sublimation (direct evaporation of ice), and calving (where chunks break off into water bodies). Accumulation typically dominates in the higher, colder zones of a glacier during winter, building up layers through snowfall, avalanches, or wind-blown drifts. In contrast, ablation prevails in the lower, warmer areas during summer, where surface meltwater runs off, ice sublimes under dry winds, or the glacier's toe calves into lakes or oceans. A <strong>positive mass balance</strong> means the glacier is gaining more than it loses, leading to <strong>growth and advance</strong>; a <strong>negative balance</strong> signals <strong>shrinkage and retreat</strong>, much like a bank account dipping into the red.</p>
+      <p>To visualise this, consider the diagram below, which illustrates the key processes of accumulation and ablation along a glacier's profile.</p>
+      <figure class="figure">
+        <img src="Figures/glaciers-as-a-system.png" alt="Processes governing glacier mass balance.">
+        <p class="figure-caption"><strong>Figure 1.</strong> Processes governing glacier mass balance. Source: <a href="https://www.antarcticglaciers.org/wp-content/uploads/2018/11/glaciers-as-a-system.png" target="_blank" rel="noopener">antarcticglaciers.org</a></p>
+      </figure>
+      <p>In the European Alps and much of North America, glaciers typically gain most of their snow during the winter, while the greatest melting occurs in summer. As a result, their mass balance—the difference between accumulation and ablation—is usually positive in winter and negative in summer. Glaciers with this seasonal pattern are referred to as <strong>winter-accumulation-type glaciers</strong>, and they make up the majority of glaciers worldwide.</p>
+      <p>By contrast, in some Himalayan regions, summer monsoon systems deliver most of the annual precipitation, while winters can be colder and relatively drier. These glaciers therefore experience their main period of snow accumulation in summer and are known as <strong>summer-accumulation-type glaciers</strong>.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-4" data-page="4">
+    <section id="equilibrium-line-altitude">
+      <h2>Equilibrium Line Altitude</h2>
+      <p>The <strong>Equilibrium Line Altitude (ELA)</strong> of a glacier is the elevation at which the amount of snow accumulation equals the amount of ice and snow melting (ablation) over a year. <strong>Above this line</strong>, snowfall exceeds melting, so the <strong>glacier gains mass</strong>, while <strong>below it</strong>, melting exceeds accumulation, causing the glacier to <strong>lose mass</strong>. The <strong>ELA is a key indicator of a glacier's health</strong> and response to climate change: if temperatures rise or precipitation patterns shift, the ELA moves higher, reducing the glacier's overall size. Scientists monitor the ELA to understand long-term trends in glacier growth or retreat, as it reflects the delicate balance between accumulation and melting that sustains glaciers.</p>
+      <figure class="figure">
+        <img src="Figures/ELA.jpg" alt="Cross-sectional diagram of a glacier showing accumulation zone, ablation zone and equilibrium line.">
+        <p class="figure-caption"><strong>Figure 2.</strong> This cross-sectional diagram illustrates the internal structure of a glacier, showing the blue glacial ice flowing from the zone of accumulation (upper region) to the zone of ablation (lower region), separated by the equilibrium line. Source: <a href="https://www.thephysicalenvironment.com/Book/glacial_systems/anatomy_glacier.html" target="_blank" rel="noopener">thephysicalenvironment.com</a></p>
+        <p class="figure-caption" style="margin-bottom: 0.5rem;">Watch the video below:</p>
+        <div class="video-wrapper" id="video-wrapper-ela">
+          <div class="video-placeholder" id="video-placeholder-ela" role="button" tabindex="0" aria-label="Play Glacier ELA video" title="Click to load and play video">
+            <span class="play-btn"></span>
+          </div>
+          <iframe id="video-iframe-ela" title="Glacier ELA video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="display:none;"></iframe>
+        </div>
+        <p class="video-fallback">If the video does not play, <a href="https://www.youtube.com/watch?v=-qdqCoHRR0g" target="_blank" rel="noopener">open it on YouTube</a>. To view via a web server: in this folder run <code>python -m http.server 8000</code> in Command Prompt or PowerShell (or double‑click <code>serve.bat</code> if you have Python), then open <code>http://localhost:8000/GlacierRemoteSensing.html</code> in your browser. Keep the server window open.</p>
+      </figure>
+      <h3>Test your understanding 1</h3>
+      <div class="quiz" data-correct="3">
+        <p><strong>If regional temperatures rise for several decades, what is the most likely effect on the ELA?</strong></p>
+        <ul class="quiz-options" role="list">
+          <li>
+            <input type="radio" name="quiz1" id="quiz1-a" value="0">
+            <label for="quiz1-a">It moves downward</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz1" id="quiz1-b" value="1">
+            <label for="quiz1-b">It stays fixed</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz1" id="quiz1-c" value="2">
+            <label for="quiz1-c">It becomes invisible</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz1" id="quiz1-d" value="3">
+            <label for="quiz1-d">It rises to higher elevations</label>
+          </li>
+        </ul>
+        <div class="quiz-feedback" id="quiz1-feedback" aria-live="polite"></div>
+        <div class="quiz-explanation" id="quiz1-explanation"><strong>Explanation:</strong> When regional temperatures rise over several decades, melting (ablation) increases at lower elevations on a glacier. Areas that used to retain snow through the summer begin to lose more ice than they gain. As a result, the boundary between accumulation and ablation—the Equilibrium Line Altitude (ELA)—shifts upslope to higher elevations.</div>
+      </div>
+      <div class="quiz" data-correct="1">
+        <p><strong>Two glaciers experience the same temperature increase. Glacier A's ELA rises much faster than Glacier B's. Which factor could explain the difference?</strong></p>
+        <ul class="quiz-options" role="list">
+          <li>
+            <input type="radio" name="quiz2" id="quiz2-a" value="0">
+            <label for="quiz2-a">Glacier A receives more snowfall</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz2" id="quiz2-b" value="1">
+            <label for="quiz2-b">Glacier B is shaded by surrounding mountains</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz2" id="quiz2-c" value="2">
+            <label for="quiz2-c">Glacier A flows more slowly</label>
+          </li>
+          <li>
+            <input type="radio" name="quiz2" id="quiz2-d" value="3">
+            <label for="quiz2-d">Glacier B is older</label>
+          </li>
+        </ul>
+        <div class="quiz-feedback" id="quiz2-feedback" aria-live="polite"></div>
+        <div class="quiz-explanation" id="quiz2-explanation"><strong>Explanation:</strong> Even when two glaciers experience the same regional temperature increase, they may respond differently because <strong>local conditions</strong> strongly influence how much melting occurs. One important factor is <strong>solar radiation</strong>—how much sunlight reaches the ice surface. If Glacier B is shaded by surrounding mountains, it receives less direct sunlight during the day. With less incoming energy, melting is reduced compared to a glacier exposed to full sun. This slows the rate at which the Equilibrium Line Altitude (ELA) rises, even though air temperatures increase by the same amount. In contrast, factors like glacier age or flow speed have much less direct effect on surface melt. Shading and aspect (north- vs south-facing slopes in many regions) can strongly control glacier energy balance and therefore ELA changes.</div>
+      </div>
+    </section>
+    </div>
+
+    <div class="page" id="page-5" data-page="5">
+    <section id="reference-benchmark-glacier">
+      <h2>Reference/benchmark glacier</h2>
+      <p>There isn't <strong>one single fixed number</strong> of glaciers on Earth—because glaciers are constantly advancing, shrinking, splitting and disappearing. But scientists who track them using satellite data and inventories give us the best estimates. One of the recent estimates suggest, there are around <strong><a href="https://nsidc.org/data/nsidc-0770/versions/7" target="_blank" rel="noopener">275,000 glaciers in the world</a></strong>.</p>
+      <p>Although this is a large number, only a very small fraction of them—on the order of ~500 glaciers (&lt;0.01%)—are monitored directly in the field with in situ mass-balance measurements. These glaciers are commonly referred to as reference glaciers or benchmark glaciers, and their observations are coordinated and archived by the World Glacier Monitoring Service (<strong><a href="https://wgms.ch/data_databasestats/" target="_blank" rel="noopener">WGMS</a></strong>).</p>
+      <p>For much of the 20th century, and until satellite remote sensing became widely available, data from these reference glaciers formed the backbone of global glacier monitoring. Long, continuous field measurements of glacier mass balance were used to assess glacier health, understand climate–glacier relationships, and infer regional and even global trends in glacier change (Zemp et al., 2009; <a href="https://wgms.ch/data_databasestats/" target="_blank" rel="noopener">WGMS</a>, 2021).</p>
+      <p>However, this valuable dataset comes with important limitations and biases. Reference glaciers are not evenly distributed across the globe: the majority are located in Europe and North America, where long-standing scientific institutions, easier access, and sustained funding have supported multi-decadal monitoring programmes. In contrast, many glacierised regions remain poorly represented, particularly High Mountain Asia.</p>
+      <p>The Himalaya, often referred to as the "Third Pole" because it contains the largest concentration of glaciers outside the polar regions, has very few long-term reference glaciers relative to its size and importance. This lack of in situ observations is due to a combination of challenges, including harsh climatic conditions, extreme topography, difficult logistics, limited infrastructure, and geopolitical constraints. As a result, glacier change in this region has historically been inferred with greater uncertainty.</p>
+      <p>These spatial biases highlight why remote sensing has become indispensable for modern glacier monitoring. Satellite observations now complement and extend field measurements, helping to fill regional gaps and provide a more globally consistent picture of glacier change—while reference glaciers remain essential for calibration, validation, and process understanding.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-6" data-page="6">
+    <section id="calculate-from-space">
+      <h2>How can we calculate glacier mass balance from space?</h2>
+      <p>Remote sensing from space has transformed the way scientists study glaciers in remote and harsh environments, providing global coverage without the risks and logistical challenges of fieldwork. Key datasets include declassified U.S. stereo satellite imagery from the <strong><a href="https://www.cia.gov/legacy/museum/exhibit/corona-americas-first-imaging-satellite-program/" target="_blank" rel="noopener">Corona</a></strong> and <strong><a href="https://www.nationalmuseum.af.mil/Visit/Museum-Exhibits/Fact-Sheets/Display/Article/195921/hexagon-kh-9-reconnaissance-satellite/" target="_blank" rel="noopener">Hexagon</a></strong> missions, which captured glacier conditions during 1960–1980. These archives have proven invaluable for reconstructing past glacier extents in regions such as the Himalaya, where few other observations exist from that period.</p>
+      <p>More recent satellite missions, including <strong><a href="https://science.nasa.gov/mission/landsat/" target="_blank" rel="noopener">Landsat</a></strong> and <strong><a href="https://sentinels.copernicus.eu/" target="_blank" rel="noopener">Sentinel</a></strong>, now allow researchers to monitor glaciers worldwide thanks to their free access, broad spatial coverage, and high temporal resolution, making long-term tracking of glacier change more comprehensive and reliable than ever before.</p>
+      <p>The Advanced Spaceborne Thermal Emission and Reflection Radiometer (<strong><a href="https://terra.nasa.gov/about/terra-instruments/aster" target="_blank" rel="noopener">ASTER</a></strong>) on NASA's Terra satellite excels in providing detailed topography and elevation data through stereo imaging, ideal for detecting thickness variations. For broader views, the Moderate Resolution Imaging Spectroradiometer (<strong><a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener">MODIS</a></strong>) offers daily snapshots at lower resolution but wide swaths, useful for monitoring snow cover and melt patterns. Altimetry sensors, such as those on <strong><a href="https://icesat-2.gsfc.nasa.gov/" target="_blank" rel="noopener">ICESat-2</a></strong>, use lasers to measure precise height changes, while gravimetry from <strong><a href="https://gracefo.jpl.nasa.gov/" target="_blank" rel="noopener">GRACE-FO</a></strong> detects mass shifts via gravity anomalies, revealing overall ice loss across regions. <a href="https://sentinels.copernicus.eu/" target="_blank" rel="noopener">Sentinel-2</a> from the European Space Agency complements these with frequent, high-resolution optical data for dynamic monitoring of glacier fronts and snow distribution.</p>
+    </section>
+
+    <section id="open-source-tools">
+      <h2>Open-source images and tools for glacier mapping</h2>
+      <p>Harnessing open-source tools democratises glacier research, allowing anyone with a computer to analyse vast datasets without costly software. For mapping extents, <strong><a href="https://qgis.org/download/" target="_blank" rel="noopener">QGIS</a></strong>—a free geographic information system—enables users to overlay <a href="https://science.nasa.gov/mission/landsat/" target="_blank" rel="noopener">Landsat</a> or <a href="https://sentinels.copernicus.eu/" target="_blank" rel="noopener">Sentinel</a> images, delineate boundaries, and calculate area changes through simple digitisation tools.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-7" data-page="7">
+    <section id="hands-on-activity-1">
+      <h2>Hands-On Activity 1</h2>
+      <h3>USGS Earth Explorer: How to download a Landsat satellite image of a certain location</h3>
+      <ol class="steps">
+        <li>Go to <a href="https://earthexplorer.usgs.gov/" target="_blank" rel="noopener">https://earthexplorer.usgs.gov/</a> — you will need to create a new account if you don't already have one. Click on Login at the top right of the screen.</li>
+        <li>On the left panel, in Search Criteria, under polygon, click decimal and click on 'Add Coordinate'. Add this coordinate: Latitude <strong>43.04</strong>, Longitude <strong>77.08</strong>. In this exercise, we are searching images of the <strong>Tuyuksu</strong> Glacier in <strong>central Asia</strong>.</li>
+        <li>In Date Range on the left panel, Search from 08/01/2025 to 10/31/2025.</li>
+        <li>Click on Data Sets, select Landsat, select Landsat Collection 2 Level 2; Select Landsat 8/9. You can see the information regarding these scenes by clicking on the 'i' icon on the left of the datasets that says 'Collection info'.</li>
+        <li>Click on Additional Criteria: don't do anything, just see the options and the information (i) for each.</li>
+        <li>Click on Results: You will see a list of 12 images from the above period. There are many options for each scene, such as Show footprint, Show Browse Overlay, Show Metadata, and Download. You can click on the 'Show Browse Overlay' option to have a quick look of the image. We avoid the scenes which are cloud covered as we cannot see the earth below through the cloud cover. This is a disadvantage of optical satellite data, such as Landsat and Sentinel. We want to download a <strong>clear scene</strong> where the glacier is clearly visible.</li>
+        <li>Let us download this scene <strong>LC08_L2SP_149030_20250807_20250815_02_T1</strong> from 7th August 2025. See more about the naming convention here: <a href="https://www.usgs.gov/faqs/what-naming-convention-landsat-collections-level-1-scenes" target="_blank" rel="noopener">USGS naming convention</a>.</li>
+        <li>Click Download Options: Select 'Product Options'. At the top you will see 'Landsat Collection 2 Level 2 Product Bundle'. Download this. Your download will start soon and will take some time to finish.</li>
+        <li>Once downloaded, extract the files.</li>
+      </ol>
+
+      <h3>Test your understanding 2</h3>
+      <p>Using the same steps as above, download another Landsat scene using the same month range and same glacier from 2012. Remember you need to download a <strong>cloud free</strong> image so that the glacier is clearly visible.</p>
+    </section>
+    </div>
+
+    <div class="page" id="page-8" data-page="8">
+    <section id="hands-on-activity-2">
+      <h2>Hands-On Activity 2</h2>
+      <h3>Installing open-source GIS software QGIS to display the image and map the glacier</h3>
+      <ol class="steps">
+        <li>Go to <a href="https://qgis.org/download/" target="_blank" rel="noopener">https://qgis.org/download/</a></li>
+        <li>Press 'Skip it and go to download' below 'Donate' (you can always donate later if you want).</li>
+        <li>Select your operating system. For Windows we need to download the 'Long Term Release' version.</li>
+        <li>Install the software: This is pretty straightforward; this link might be helpful to walk you through: <a href="https://youtu.be/GxEOpMPhpWI" target="_blank" rel="noopener">https://youtu.be/GxEOpMPhpWI</a></li>
+        <li>Open QGIS. Click 'New Empty Project'.</li>
+        <li>From the Menu at the top, select Layer → Add Layer → Add Raster Layer.</li>
+        <li>Click the Browse option (three dots) beside the Raster dataset and locate the folder where you extracted the files. Select the file ending with _B3.tif, click add. The scene will be displayed by QGIS (We are opening band 3, but you can check all the bands by displaying them in the same way).</li>
+        <li>Check the bottom right corner of QGIS. This is the <strong>coordinate reference system (CRS)</strong> that your raster (band 3 image) is using. You might see something like <strong>EPSG:32643</strong>. This tells you the coordinate reference system (CRS) of your raster (for example, Band 3 of a Landsat image).</li>
+        <li><strong>EPSG:32643</strong> = WGS 84 / UTM Zone 43N. <strong>WGS 84</strong> is the global geographic coordinate system used by <strong><a href="https://www.geotab.com/blog/what-is-gps/" target="_blank" rel="noopener">GPS</a></strong>. <strong>UTM Zone 43N</strong> means the image is projected using the <strong>Universal Transverse Mercator</strong> system in the <strong>Northern Hemisphere</strong>, specifically the strip covering 72°E to 78°E longitude. Coordinates are measured in <strong>metres</strong> (Eastings/Northings), which makes calculating distances and areas much easier than using latitude and longitude. Place the cursor on any location of the image and look at the coordinate at the bottom. What do you see? These are the coordinates in metres.</li>
+        <li><strong>How is Zone 43 derived?</strong> UTM zones divide the Earth into 60 longitudinal strips, each 6° wide. Zones are numbered starting at 180°W, moving east: Zone 1: 180°W to 174°W, Zone 2: 174°W to 168°W, … and so on. To find the UTM zone for a longitude (e.g. 77°E): that's why the EPSG code ends in 43, indicating UTM Zone 43. The "N" at the end means Northern Hemisphere.</li>
+      </ol>
+      <div class="tip"><strong>Tip:</strong> You usually don't need to calculate this manually; QGIS and Landsat automatically assign the correct UTM zone based on the scene's location. But understanding the numbering helps you know what EPSG codes like 32643 mean.</div>
+      <ol class="steps" start="11">
+        <li>To find a glacier using geographic coordinates, it's easiest to switch the map to a latitude-longitude coordinate system. In QGIS, this is EPSG:4326 (WGS 84). Click on EPSG:32643 in the bottom-right corner of QGIS. The Project Coordinate Reference System (CRS) window will open. In the Filter box, type 4326. From the results below, select WGS 84. Click Apply, then OK. Your map is now displayed in latitude and longitude, making it easier to navigate to a specific location.</li>
+        <li>Use the coordinate display to go to the location 77.08, 43.04. <strong>Important:</strong> Coordinates are shown in the order Longitude, Latitude. Zoom in to explore the glacier at this location.</li>
+        <li><strong>Create a point on the glacier and save it as a shapefile.</strong> Creating a point shapefile allows you to mark the glacier location and easily access it in future sessions. Go to the menu: Layer → Create Layer → New Shapefile Layer. Click the three dots next to File name, Browse to a folder where you want to save the shapefile, Enter a name, for example: Tuyuksu, and click Save. Under Geometry Type, select Point. Ensure the CRS is set to EPSG:4326 (WGS 84). Click OK. The new point shapefile (e.g. Tuyuksu) will appear in the Layers panel. Click on it to make it active. On the toolbar, click the pencil icon labelled Toggle Editing. This allows you to add or edit features in the shapefile. Select the Add Point Feature tool (icon with three dots). Your cursor will change to indicate editing mode. Click on the glacier location on the map. In the pop-up, enter '1' for the ID field, or leave it blank for now. Press OK to add the point. Click Save Layer Edits (next to the editing tools) to save the point. Click the Toggle Editing pencil again to exit editing mode. Your new point shapefile is now saved in the folder you selected. You can reopen it in QGIS anytime to view or add more points.</li>
+      </ol>
+    </section>
+    </div>
+
+    <div class="page" id="page-9" data-page="9">
+    <section id="practice-session-1">
+      <h2>Practice Session 1</h2>
+      <ul class="steps">
+        <li>Display one of the bands from the 2012 image. Go to the glacier location. What do you see? Did the glacier advance or retreat in 2025 compared to 2012?</li>
+        <li>Using the similar steps as you followed to create a point shapefile, can you create a polygon shapefile to map the glacier extents for 2012 and 2025?</li>
+        <li>Using the Measure Line tool in QGIS, can you measure approximately how much the glacier advanced or retreated?</li>
+      </ul>
+      <p><strong>Congratulations!</strong> You have successfully completed the course. In the next course we will learn how to map the ELA from satellite images.</p>
+      <p>Further reading: <a href="http://antarcticglaciers.org/glaciers-and-climate/observing-and-monitoring-glaciers-and-ice-sheets/mapping-worlds-glaciers/" target="_blank" rel="noopener">Mapping the world's glaciers</a> · <a href="https://graphs.unepgrid.ch/graph_glaciers.php" target="_blank" rel="noopener">UNEP glacier graphs</a></p>
+    </section>
+
+    <section id="references">
+      <h2>References</h2>
+      <ul class="references">
+        <li>Bhattacharya, A., Bolch, T., Mukherjee, K., King, O., Menounos, B., Kapitsa, V., Neckel, N., Yang, W. and Yao, T., 2021. High Mountain Asian glacier response to climate revealed by multi-temporal satellite observations since the 1960s. <em>Nature Communications</em>, 12(1), p.4133.</li>
+        <li>Dussaillant, I., Hugonnet, R., Huss, M., Berthier, E., Bannwart, J., Paul, F. and Zemp, M., 2025. Annual mass change of the world's glaciers from 1976 to 2024 by temporal downscaling of satellite data with in situ observations. <em>Earth System Science Data</em>, 17(5), pp.1977–2006.</li>
+        <li>Hugonnet, R., McNabb, R., Berthier, E., Menounos, B., Nuth, C., Girod, L., Farinotti, D., Huss, M., Dussaillant, I., Brun, F. and Kääb, A., 2021. Accelerated global glacier mass loss in the early twenty-first century. <em>Nature</em>, 592(7856), pp.726–731.</li>
+        <li>The GlaMBIE Team: Community estimate of global glacier mass changes from 2000 to 2023.</li>
+      </ul>
+    </section>
+    </div>
+
+    <nav class="page-nav" aria-label="Page navigation">
+      <a href="#" class="btn btn-prev" id="btn-prev" aria-label="Previous page">← Previous page</a>
+      <span class="page-indicator" id="page-indicator">Page 1 of 9</span>
+      <a href="#" class="btn btn-next" id="btn-next" aria-label="Next page">Next page →</a>
+    </nav>
+  </div>
+  </main>
+
+  <script>
+    (function () {
+      var placeholder = document.getElementById('video-placeholder-ela');
+      var iframe = document.getElementById('video-iframe-ela');
+      if (placeholder && iframe) {
+        function loadVideo() {
+          iframe.src = 'https://www.youtube.com/embed/-qdqCoHRR0g?rel=0&autoplay=1';
+          iframe.style.display = 'block';
+          placeholder.classList.add('loaded');
+        }
+        placeholder.addEventListener('click', loadVideo);
+        placeholder.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); loadVideo(); } });
+      }
+    })();
+    (function () {
+      var totalPages = 9;
+      var currentPage = 1;
+
+      function showPage(num) {
+        currentPage = Math.max(1, Math.min(totalPages, num));
+        document.querySelectorAll('.page').forEach(function (el) {
+          el.classList.toggle('active', parseInt(el.getAttribute('data-page'), 10) === currentPage);
+        });
+        document.getElementById('page-indicator').textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        var prevBtn = document.getElementById('btn-prev');
+        var nextBtn = document.getElementById('btn-next');
+        prevBtn.classList.toggle('btn-disabled', currentPage === 1);
+        nextBtn.classList.toggle('btn-disabled', currentPage === totalPages);
+        prevBtn.setAttribute('aria-disabled', currentPage === 1 ? 'true' : 'false');
+        nextBtn.setAttribute('aria-disabled', currentPage === totalPages ? 'true' : 'false');
+        document.querySelectorAll('.nav-link').forEach(function (link) {
+          link.classList.toggle('active', parseInt(link.getAttribute('data-page'), 10) === currentPage);
+        });
+      }
+
+      document.getElementById('btn-prev').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (currentPage > 1) showPage(currentPage - 1);
+      });
+      document.getElementById('btn-next').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (currentPage < totalPages) showPage(currentPage + 1);
+      });
+      document.querySelectorAll('.nav-link').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          showPage(parseInt(this.getAttribute('data-page'), 10));
+        });
+      });
+
+      var hash = window.location.hash;
+      if (/^#page-[0-9]+$/.test(hash)) {
+        var n = parseInt(hash.replace('#page-', ''), 10);
+        if (n >= 1 && n <= totalPages) showPage(n);
+      } else {
+        showPage(1);
+      }
+    })();
+
+    document.querySelectorAll('.quiz').forEach(function (quiz) {
+      var correctIndex = parseInt(quiz.getAttribute('data-correct'), 10);
+      var feedbackEl = quiz.querySelector('.quiz-feedback');
+      var explanationEl = quiz.querySelector('.quiz-explanation');
+      var radios = quiz.querySelectorAll('input[type="radio"]');
+
+      radios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          var selected = parseInt(this.value, 10);
+          var isCorrect = selected === correctIndex;
+
+          feedbackEl.textContent = isCorrect ? 'True' : 'False';
+          feedbackEl.className = 'quiz-feedback visible ' + (isCorrect ? 'correct' : 'incorrect');
+          feedbackEl.setAttribute('aria-live', 'polite');
+
+          explanationEl.classList.add('visible');
+          explanationEl.setAttribute('aria-hidden', 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
