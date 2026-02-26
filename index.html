@@ -109,6 +109,8 @@
       .quiz-options li { min-height: 44px; padding: 0.35rem 0; }
       .page-nav { padding: 0.75rem 0; gap: 0.75rem; }
     }
+    .share-qr .qr-wrap { margin-top: 0.75rem; }
+    .share-qr .qr-wrap img { display: block; border-radius: 4px; }
     .video-fallback code, .tip code { word-break: break-all; }
     .nav-sidebar-author {
       margin-top: 1.25rem;
@@ -354,6 +356,14 @@
       <h2>License</h2>
       <p>This course is licensed under the Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) licence — see <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-sa/4.0/</a> for details.</p>
     </section>
+
+    <section id="share-qr" class="share-qr">
+      <h2>Share this course</h2>
+      <p>Scan the QR code to open this webpage on your phone or share the link.</p>
+      <div class="qr-wrap">
+        <img id="qr-code" src="" alt="QR code to view this webpage" width="160" height="160">
+      </div>
+    </section>
     </div>
 
     <div class="page" id="page-2" data-page="2">
@@ -579,6 +589,17 @@
   </main>
 
   <script>
+    // Set your GitHub Pages (or live) URL here so the QR code always points to it when shared.
+    var SHARE_PAGE_URL = 'https://kmu2000.github.io/GlacierRemoteSensing/';
+    (function () {
+      var qrImg = document.getElementById('qr-code');
+      if (qrImg) {
+        var url = (typeof SHARE_PAGE_URL === 'string' && SHARE_PAGE_URL.indexOf('YOUR-') === -1)
+          ? SHARE_PAGE_URL.replace(/\/$/, '')
+          : (window.location.href.split('#')[0] || window.location.href);
+        qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(url);
+      }
+    })();
     (function () {
       var toggle = document.getElementById('nav-toggle');
       var sidebar = document.getElementById('nav-sidebar');
